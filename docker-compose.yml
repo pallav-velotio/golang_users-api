@@ -1,0 +1,9 @@
+version: '3'
+
+services:  
+  users-api:
+    image: velotiopallav/users-api
+    ports:
+    - "8081:8010"
+  service-db:
+    image: velotiopallav/service-db

@@ -4,7 +4,7 @@ func main() {
 	a := App{}
 	a.Initialize(
 		"postgres",
-		"password",
+		"postgres",
 		"users")
 
 	a.Run(":8010")

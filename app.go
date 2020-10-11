@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	"encoding/json"
@@ -19,10 +20,17 @@ type App struct {
 	DB     *sql.DB
 }
 
+type order struct {
+	ID          int    `json:"id"`
+	UserID      int    `json:"user_id"`
+	Description string `json:"description"`
+	Amount      int    `json:"amount"`
+}
+
 // Initialize .
 func (a *App) Initialize(user, password, dbname string) {
 	connectionString :=
-		fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
+		fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", user, password, "service-db", "5432", dbname)
 
 	var err error
 	a.DB, err = sql.Open("postgres", connectionString)
@@ -75,6 +83,8 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 }
 
 func (a *App) getUsers(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Route getUsers")
+
 	count, _ := strconv.Atoi(r.FormValue("count"))
 	start, _ := strconv.Atoi(r.FormValue("start"))
 
@@ -153,10 +163,59 @@ func (a *App) deleteUser(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
 }
 
+func (a *App) getAllOrders(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	resp, err := http.Get("http://orders-api:8000/" + string(vars["id"]) + "/orders")
+	if err != nil {
+		fmt.Println("Unable To Fetch Orders")
+	}
+	data, derr := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(data))
+	if derr != nil {
+		fmt.Println("Unable to Process Orders !!!")
+	}
+	result := &[]order{}
+	json.Unmarshal(data, result)
+	respondWithJSON(w, http.StatusOK, result)
+}
+
+func (a *App) createOrder(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	_, perr := http.Post("http://orders-api:8000/"+string(vars["id"]+"/order"), "application/x-www-form-urlencoded", r.Body)
+	if perr != nil {
+		respondWithError(w, http.StatusBadRequest, "Unabrl to Add Order")
+	}
+
+}
+
+func (a *App) getOrder(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	resp, err := http.Get("http://orders-api:8000/" + string(vars["id"]) + "/order/" + string(vars["oid"]))
+	if err != nil {
+		fmt.Println("Unable To Fetch Orders")
+	}
+	defer resp.Body.Close()
+	data, _ := ioutil.ReadAll(resp.Body)
+	result := &order{}
+	json.Unmarshal(data, result)
+
+	respondWithJSON(w, http.StatusOK, result)
+
+}
+func (a *App) homePage(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("HomePage")
+}
+
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("api/v1/users", a.getUsers).Methods(http.MethodGet)
-	a.Router.HandleFunc("api/v1/user", a.createUser).Methods(http.MethodPost)
-	a.Router.HandleFunc("api/v1/user/{id:[0-9]+}", a.getUser).Methods(http.MethodGet)
-	a.Router.HandleFunc("api/v1/user/{id:[0-9]+}", a.updateUser).Methods(http.MethodPut)
-	a.Router.HandleFunc("api/v1/user/{id:[0-9]+}", a.deleteUser).Methods(http.MethodDelete)
+	fmt.Println("Route Intialized")
+	a.Router.HandleFunc("/", a.homePage).Methods(http.MethodGet)
+	a.Router.HandleFunc("/api/v1/users", a.getUsers).Methods(http.MethodGet)
+	a.Router.HandleFunc("/api/v1/user", a.createUser).Methods(http.MethodPost)
+	a.Router.HandleFunc("/api/v1/user/{id:[0-9]+}", a.getUser).Methods(http.MethodGet)
+	a.Router.HandleFunc("/api/v1/user/{id:[0-9]+}", a.updateUser).Methods(http.MethodPut)
+	a.Router.HandleFunc("/api/v1/user/{id:[0-9]+}", a.deleteUser).Methods(http.MethodDelete)
+	a.Router.HandleFunc("/api/v1/user/{id:[0-9]+}/orders", a.getAllOrders).Methods(http.MethodGet)
+	a.Router.HandleFunc("/api/v1/user/{id:[0-9]+}/order", a.createOrder).Methods(http.MethodPost)
+	a.Router.HandleFunc("/api/v1/user/{id:[0-9]+}/order/{oid:[0-9]+}", a.getOrder).Methods(http.MethodGet)
+
 }

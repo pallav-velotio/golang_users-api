@@ -11,6 +11,7 @@ type user struct {
 	Email string  `json:"email"`
 }
 
+
 func (u *user) getUser(db *sql.DB) error {
 	return db.QueryRow("SELECT name, age, email FROM users WHERE id=$1", u.ID).Scan(&u.Name, &u.Age, &u.Email)
 }
@@ -39,7 +40,7 @@ func (u *user) createUser(db *sql.DB) error {
 
 func getUsers(db *sql.DB, start, count int) ([]user, error) {
 	rows, err := db.Query(
-		"SELECT id, name,  price FROM users LIMIT $1 OFFSET $2",
+		"SELECT * FROM users LIMIT $1 OFFSET $2",
 		count, start)
 
 	if err != nil {
