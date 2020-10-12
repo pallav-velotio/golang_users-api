@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-db
+spec:
+  selector:
+    matchLabels:
+      component: service-db
+  template:
+    metadata:
+      labels:
+        component: service-db
+    spec:
+      containers:
+      - name: service-db
+        image: velotiopallav/service-db
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5432 

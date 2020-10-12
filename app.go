@@ -21,10 +21,10 @@ type App struct {
 }
 
 type order struct {
-	ID          int    `json:"id"`
-	UserID      int    `json:"user_id"`
-	Description string `json:"description"`
-	Amount      int    `json:"amount"`
+	ID          int     `json:"id"`
+	UserID      int     `json:"user_id"`
+	Description string  `json:"description"`
+	Amount      float64 `json:"amount"`
 }
 
 // Initialize .
@@ -168,6 +168,7 @@ func (a *App) getAllOrders(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get("http://orders-api:8000/" + string(vars["id"]) + "/orders")
 	if err != nil {
 		fmt.Println("Unable To Fetch Orders")
+		fmt.Println(err)
 	}
 	data, derr := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(data))
@@ -183,7 +184,7 @@ func (a *App) createOrder(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	_, perr := http.Post("http://orders-api:8000/"+string(vars["id"]+"/order"), "application/x-www-form-urlencoded", r.Body)
 	if perr != nil {
-		respondWithError(w, http.StatusBadRequest, "Unabrl to Add Order")
+		respondWithError(w, http.StatusBadRequest, "Unable to Add Order")
 	}
 
 }

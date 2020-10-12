@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-api
+spec:
+  selector:
+    matchLabels:
+      component: orders-api
+  template:
+    metadata:
+      labels:
+        component: orders-api
+    spec:
+      containers:
+      - name: orders-api
+        image: velotiopallav/orders-api
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8000

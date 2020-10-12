@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-api
+spec:
+  selector:
+    matchLabels:
+      component: users-api
+  template:
+    metadata:
+      labels:
+        component: users-api
+    spec:
+      containers:
+      - name: users-api
+        image: velotiopallav/users-api
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8081

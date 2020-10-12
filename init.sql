@@ -8,11 +8,10 @@ CREATE TABLE users
 );
 CREATE TABLE orders
 (
-    id SERIAL,
-    name TEXT NOT NULL,
-    amount NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    id SERIAL,   
     description TEXT,
     user_id INTEGER  NOT NULL,
+    amount NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     CONSTRAINT orders_pkey PRIMARY KEY (id)
 );
 

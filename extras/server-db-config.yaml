@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-db
+spec:
+  selector:
+    matchLabels:
+      component: server-db
+  template:
+    metadata:
+      labels:
+        component: server-db
+    spec:
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim
+      containers:
+        - name: server-db
+          image: velotiopallav/server-db
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+              - name: postgres-storage
+                mountPath: /var/lib/postgresql/data
+                subPath: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-db-service
+spec:
+  type: ClusterIP
+  selector:
+    component : server-db
+  ports:
+    - port: 5432
+      targetPort: 5432

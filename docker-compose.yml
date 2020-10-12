@@ -7,3 +7,6 @@ services:
     - "8081:8010"
   service-db:
     image: velotiopallav/service-db
+  orders-api:
+    image: velotiopallav/orders-api
+    
